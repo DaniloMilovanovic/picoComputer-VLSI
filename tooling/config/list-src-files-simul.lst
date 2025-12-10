@@ -1,1 +1,3 @@
 src/simulation/top.v
+src/simulation/modules/alu.v
+src/simulation/modules/register.v
