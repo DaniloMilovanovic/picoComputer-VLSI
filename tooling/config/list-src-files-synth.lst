@@ -1,0 +1,10 @@
+src/synthesis/modules/red.v
+src/synthesis/modules/debouncer.v
+src/synthesis/modules/register.v
+src/synthesis/modules/bcd.v
+src/synthesis/modules/alu.v
+src/synthesis/modules/ssd.v
+src/synthesis/modules/clk_div.v
+src/synthesis/modules/memory.v
+src/synthesis/modules/mem_init.mif
+src/synthesis/DE0_TOP.v

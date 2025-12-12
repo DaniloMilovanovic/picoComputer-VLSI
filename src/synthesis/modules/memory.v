@@ -1,9 +1,11 @@
+
 module memory #(
 	parameter FILE_NAME = "mem_init.mif",
     parameter ADDR_WIDTH = 6,
     parameter DATA_WIDTH = 16
 )(
     input clk,
+    input rst_n,
     input we,
     input [ADDR_WIDTH - 1:0] addr,
     input [DATA_WIDTH - 1:0] data,
@@ -14,9 +16,11 @@ module memory #(
 
     always @(posedge clk) begin
         if (we) begin
-            mem[addr] = data;
+            mem[addr] <= data;
         end
-        out <= mem[addr];
+        else begin
+            out <= mem[addr];
+        end
     end
 
 endmodule

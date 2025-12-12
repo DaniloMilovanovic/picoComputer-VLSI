@@ -8,8 +8,8 @@ module top;
     integer ind;
     reg test_alu, test_reg;
 
-    alu inst0(.oc(top_oc), .a(top_a), .b(top_b), .f(top_f));
-    register inst2(.clk(top_clk), .rst_n(top_rst_n), .cl(top_cl), .ld(top_ld), .in(top_in), .inc(top_inc), .dec(top_dec), .sr(top_sr), .ir(top_ir), .sl(top_sl), .il(top_il), .out(top_out));
+    alu alu_inst(.oc(top_oc), .a(top_a), .b(top_b), .f(top_f));
+    register reg_inst(.clk(top_clk), .rst_n(top_rst_n), .cl(top_cl), .ld(top_ld), .in(top_in), .inc(top_inc), .dec(top_dec), .sr(top_sr), .ir(top_ir), .sl(top_sl), .il(top_il), .out(top_out));
     
     initial begin
         
@@ -62,7 +62,7 @@ module top;
         $stop;
         
         //Register test
-        $display("Start of the Refister unit test.\n");
+        $display("Start of the Register unit test.\n");
 
         test_reg = 1'b1;
 

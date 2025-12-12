@@ -75,12 +75,12 @@ module DE0_CV_TOP(input CLOCK2_50,
     //  REG/WIRE declarations
     // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == 
     
-    assign {HEX3, HEX2} = 14'h3FFF;
+    //assign {HEX3, HEX2} = 14'h3FFF;
 
     // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == 
     //  Structural coding
     // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == 
-    
+    /*
     top #(
       .DIVISOR(50_000_000),
       .FILE_NAME("mem_init.mif"),
@@ -94,6 +94,6 @@ module DE0_CV_TOP(input CLOCK2_50,
       .mnt({VGA_HS, VGA_VS, VGA_R, VGA_G, VGA_B}),
       .led(LEDR[9:0]),
       .hex({HEX5, HEX4, HEX1, HEX0})
-    );
+    );*/
 
 endmodule
