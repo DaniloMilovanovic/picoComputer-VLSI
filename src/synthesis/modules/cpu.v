@@ -14,48 +14,60 @@ module cpu #(
     output [ADDR_WIDTH - 1:0] sp
 );
 
+localparam 
+    MOV = 4'b0000, 
+    ADD = 4'b0001, 
+    SUB = 4'b0010, 
+    MUL = 4'b0011, 
+    DIV = 4'b0100, 
+    IN = 4'b0111,
+    OUT = 4'b1000,
+    STOP = 4'b1111;
+
+reg [2:0] alu_oc;
+reg [DATA_WIDTH - 1:0] alu_a, alu_b; 
+wire [DATA_WIDTH - 1:0] alu_f;
+alu #(.DATA_WIDTH(DATA_WIDTH)) ALU(.oc(alu_oc), .a(alu_a), .b(alu_b), .f(alu_f));
+
 reg pc_cl, pc_ld, pc_inc, pc_dec, pc_sr, pc_ir, pc_sl, pc_il;
-reg [5:0] pc_in;
-wire [5:0] pc_out;
-register #(.DATA_WIDTH(6)) PC(clk, rst_n, pc_cl, pc_ld, pc_in, pc_inc, pc_dec, pc_sr, pc_ir, pc_sl, pc_il, pc_out);
+reg [ADDR_WIDTH - 1:0] pc_in;
+wire [ADDR_WIDTH - 1:0] pc_out;
+register #(.DATA_WIDTH(ADDR_WIDTH)) PC(clk, rst_n, pc_cl, pc_ld, pc_in, pc_inc, pc_dec, pc_sr, pc_ir, pc_sl, pc_il, pc_out); 
+//NEMOJ PO REDOSLEDU!
 
 reg sp_cl, sp_ld, sp_inc, sp_dec, sp_sr, sp_ir, sp_sl, sp_il;
-reg [5:0] sp_in;
-wire [5:0] sp_out;
-register #(.DATA_WIDTH(6)) SP(clk, rst_n, sp_cl, sp_ld, sp_in, sp_inc, sp_dec, sp_sr, sp_ir, sp_sl, sp_il, sp_out);
+reg [ADDR_WIDTH - 1:0] sp_in;
+wire [ADDR_WIDTH - 1:0] sp_out;
+register #(.DATA_WIDTH(ADDR_WIDTH)) SP(clk, rst_n, sp_cl, sp_ld, sp_in, sp_inc, sp_dec, sp_sr, sp_ir, sp_sl, sp_il, sp_out);
 
 reg ir_cl, ir_ld, ir_inc, ir_dec, ir_sr, ir_ir, ir_sl, ir_il;
-reg [31:0] ir_in;
-wire [31:0] ir_out;
-register #(.DATA_WIDTH(32)) IR(clk, rst_n, ir_cl, ir_ld, ir_in, ir_inc, ir_dec, ir_sr, ir_ir, ir_sl, ir_il, ir_out);
+reg [2 * DATA_WIDTH - 1:0] ir_in;
+wire [2 * DATA_WIDTH - 1:0] ir_out;
+register #(.DATA_WIDTH(2 * DATA_WIDTH)) IR(clk, rst_n, ir_cl, ir_ld, ir_in, ir_inc, ir_dec, ir_sr, ir_ir, ir_sl, ir_il, ir_out);
 
 reg mar_cl, mar_ld, mar_inc, mar_dec, mar_sr, mar_ir, mar_sl, mar_il;
-reg [5:0] mar_in;
-wire [5:0] mar_out;
-register #(.DATA_WIDTH(6)) MAR(clk, rst_n, mar_cl, mar_ld, mar_in, mar_inc, mar_dec, mar_sr, mar_ir, mar_sl, mar_il, mar_out);
+reg [ADDR_WIDTH - 1:0] mar_in;
+wire [ADDR_WIDTH - 1:0] mar_out;
+register #(.DATA_WIDTH(ADDR_WIDTH)) MAR(clk, rst_n, mar_cl, mar_ld, mar_in, mar_inc, mar_dec, mar_sr, mar_ir, mar_sl, mar_il, mar_out);
 
 reg mdr_cl, mdr_ld, mdr_inc, mdr_dec, mdr_sr, mdr_ir, mdr_sl, mdr_il;
-reg [15:0] mdr_in;
-wire [15:0] mdr_out;
-register #(.DATA_WIDTH(16)) MDR(clk, rst_n, mdr_cl, mdr_ld, mdr_in, mdr_inc, mdr_dec, mdr_sr, mdr_ir, mdr_sl, mdr_il, mdr_out);
+reg [DATA_WIDTH - 1:0] mdr_in;
+wire [DATA_WIDTH - 1:0] mdr_out;
+register #(.DATA_WIDTH(DATA_WIDTH)) MDR(clk, rst_n, mdr_cl, mdr_ld, mdr_in, mdr_inc, mdr_dec, mdr_sr, mdr_ir, mdr_sl, mdr_il, mdr_out);
 
 reg a_cl, a_ld, a_inc, a_dec, a_sr, a_ir, a_sl, a_il;
-reg [5:0] a_in;
-wire [5:0] a_out;
-register #(.DATA_WIDTH(6)) A(clk, rst_n, a_cl, a_ld, a_in, a_inc, a_dec, a_sr, a_ir, a_sl, a_il, a_out);
+reg [ADDR_WIDTH - 1:0] a_in;
+wire [ADDR_WIDTH - 1:0] a_out;
+register #(.DATA_WIDTH(ADDR_WIDTH)) A(clk, rst_n, a_cl, a_ld, a_in, a_inc, a_dec, a_sr, a_ir, a_sl, a_il, a_out);
 
 reg [10:0] state_reg, state_next;
 
 reg we_reg, we_next;
-reg [ADDR_WIDTH - 1:0] addr_reg, addr_next;
-reg [DATA_WIDTH - 1:0] data_reg, data_next;
 reg [DATA_WIDTH - 1:0] out_reg, out_next;
-reg [ADDR_WIDTH - 1:0] pc_reg, pc_next;
-reg [ADDR_WIDTH - 1:0] sp_reg, sp_next;
 
 assign we = we_reg;
-assign addr = addr_reg;
-assign data = data_reg;
+assign addr = mar_out;
+assign data = mdr_out;
 assign out = out_reg;
 assign pc = pc_out;
 assign sp = sp_out;
@@ -65,32 +77,20 @@ always @(posedge clk, negedge rst_n) begin
         out_reg <= 1'b0;
         state_reg <= {10{1'b0}};
         we_reg <= 1'b0;
-        addr_reg <= {ADDR_WIDTH - 1{1'b0}};
-        data_reg <= {DATA_WIDTH - 1{1'b0}};
-        out_reg <= {DATA_WIDTH - 1{1'b0}};
-        pc_reg <= {ADDR_WIDTH - 1{1'b0}};
-        sp_reg <= {ADDR_WIDTH - 1{1'b0}};
+        out_reg <= {(DATA_WIDTH - 1){1'b0}};
     end
     else begin
         out_reg <= out_next;
         state_reg <= state_next;
         we_reg <= we_next;
-        addr_reg <= addr_next;
-        data_reg <= data_next;
         out_reg <= out_next;
-        pc_reg <= pc_next;
-        sp_reg <= sp_next;
     end
 end
 
 always @(*) begin
     state_next = state_reg;
-    we_next = we_reg;
-    addr_next = addr_reg;
-    data_next = data_reg;
+    we_next = 1'b0;
     out_next = out_reg;
-    pc_next = pc_reg;
-    sp_next = sp_reg;
 
     pc_cl = 1'b0;
     pc_ld = 1'b0;
@@ -100,7 +100,7 @@ always @(*) begin
     pc_ir = 1'b0;
     pc_sl = 1'b0;
     pc_il = 1'b0;
-    pc_in = 6'b0;
+    pc_in = 6'b0; //FIX THIS!!!
 
     sp_cl = 1'b0;
     sp_ld = 1'b0;
@@ -152,14 +152,14 @@ always @(*) begin
     a_il = 1'b0;
     a_in = 6'b0;
 
+    alu_oc = 3'b0;
+    alu_a = {(DATA_WIDTH - 1){1'b0}};
+    alu_b = {(DATA_WIDTH - 1){1'b0}};
+
     case (state_reg)
         10'd0: begin //initialize registers
             we_next = 1'b0;
-            addr_next = {ADDR_WIDTH - 1{1'b0}};
-            data_next = {DATA_WIDTH - 1{1'b0}};
-            out_next = {DATA_WIDTH - 1{1'b0}};
-            pc_next = {ADDR_WIDTH - 1{1'b0}};
-            sp_next = {ADDR_WIDTH - 1{1'b0}};
+            out_next = out_reg;;
             
             pc_in = 6'd8;
             pc_ld = 1'b1;
@@ -167,12 +167,302 @@ always @(*) begin
             sp_in = ADDR_WIDTH - 1;
             sp_ld = 1'b1;
 
-
+            state_next = 10'd1;
         end
-        10'd1: begin
+        //IF phase
+        10'd1: begin // MAR <= PC; PC = PC + 1;
+            mar_ld = 1'b1;
+            mar_in = pc_out;
 
+            pc_inc = 1'b1;
+
+            state_next = 10'd2;
+        end 
+
+        10'd2: begin //MDR <= MEM[MAR];
+            mdr_ld = 1'b1;
+            mdr_in = mem;
+            
+            state_next = 10'd3;
         end
 
+        10'd3: begin // IR[15:0] <= MDR;
+            ir_in = {{DATA_WIDTH{1'b0}}, mdr_out};
+            ir_ld = 1'b1;
+            state_next = 10'd4;
+        end //If there were instructions that needed IR[15:0], we would add it here
+        // Get the first operand 15:12  11:08  07:04  03:00
+        
+        10'd4: begin 
+            case (ir_out[15:12])
+                MOV: state_next = 10'd10;
+                ADD: state_next = 10'd10;
+                SUB: state_next = 10'd10;
+                MUL: begin 
+                    if(ir_out[3:0] == 4'h0)
+                        state_next = 10'd1;
+                    else
+                        state_next = 10'd10;
+                end
+                DIV: state_next = 10'd10;
+                IN: state_next = 10'd30;
+                OUT: state_next = 10'd40;
+                STOP: state_next = 10'd60;
+                default: 
+                    state_next = 10'd1;//error state
+            endcase
+        end
+        //MOV, ADD, SUB, MUL, DIV
+        10'd10: begin //MAR <= y2..0
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[6:4]}; //y2..0
+            state_next = 10'd11;
+        end
+
+        10'd11: begin // MDR <= MEM[MAR];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+
+            if(ir_out[7]) begin //regind
+                state_next = 10'd12;
+            end
+            else begin //regdir
+                state_next = 10'd14;
+            end
+        end
+
+        10'd12: begin // MAR <= MEM[y2..0];
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1: 0];
+            state_next = 10'd13;
+        end
+
+        10'd13: begin // MDR <= MEM[MEM[y2..0]];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            state_next = 10'd14;
+        end
+
+        10'd14: begin // A <= MDR;
+            a_ld = 1'b1;
+            a_in = mdr_out;
+            if(ir_out[15:12] == MOV) //2 operand instructions
+                state_next = 10'd80;
+            else
+                state_next = 10'd15;
+        end
+
+        10'd15: begin //MAR <= z2..0;
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[2:0]}; //z2..0
+            state_next = 10'd16;
+        end
+
+        10'd16: begin //MDR <= MEM[z2..0];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            if(ir_out[3]) begin //regind
+                state_next = 10'd17;
+            end
+            else begin //regdir
+                state_next = 10'd80;
+            end
+        end
+
+        10'd17: begin // MAR <= MEM[z2..0]
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1: 0];
+            state_next = 10'd18;
+        end
+
+        10'd18: begin // MDR <= MEM[MEM[z2..0]];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            state_next = 10'd19;
+        end
+
+        10'd19: begin 
+            alu_a = mdr_out;
+            alu_b = a_out;
+            alu_oc = ir_out[15:12] - 1;
+            a_in = alu_f;
+            a_ld = 1'b1;
+            state_next = 10'd80;
+        end
+
+        //IN operation
+        //Load in into accumulator
+        10'd30: begin
+            a_ld = 1'b1;
+            a_in = in;
+            state_next = 10'd80;
+        end
+
+        //OUT operation
+        //Load the x2..0 operand into the accumulator
+        10'd40: begin //MAR <= x2..0
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[10:8]}; //x2..0
+            state_next = 10'd41;
+        end
+
+        10'd41: begin // MDR <= MEM[MAR];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+
+            if(ir_out[11]) begin //regind
+                state_next = 10'd42;
+            end
+            else begin //regdir
+                state_next = 10'd44;
+            end
+        end
+
+        10'd42: begin // MAR <= MEM[x2..0];
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1:0];
+            state_next = 10'd43;
+        end
+
+        10'd43: begin // MDR <= MEM[MEM[x2..0]];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            state_next = 10'd44;
+        end
+
+        10'd44: begin // OUT <= MDR;
+            out_next = mdr_out;
+            state_next = 10'd1;
+        end
+
+        //STOP operation
+        10'd50: begin //MAR <= x2..0
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[10:8]}; //x2..0
+            state_next = 10'd51;
+        end
+
+        10'd51: begin // MDR <= MEM[MAR];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+
+            if(ir_out[11]) begin //regind
+                state_next = 10'd52;
+            end
+            else begin //regdir
+                state_next = 10'd54;
+            end
+        end
+
+        10'd52: begin // MAR <= MEM[x2..0];
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1:0];
+            state_next = 10'd53;
+        end
+
+        10'd53: begin // MDR <= MEM[MEM[x2..0]];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            state_next = 10'd54;
+        end
+
+        10'd54: begin // OUT <= MDR;
+            out_next = mdr_out;
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[6:4]}; //y2..0
+            state_next = 10'd55;
+        end
+
+        10'd55: begin // MDR <= MEM[MAR];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+
+            if(ir_out[7]) begin //regind
+                state_next = 10'd56;
+            end
+            else begin //regdir
+                state_next = 10'd58;
+            end
+        end
+
+        10'd56: begin // MAR <= MEM[y2..0];
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1: 0];
+            state_next = 10'd57;
+        end
+
+        10'd57: begin // MDR <= MEM[MEM[y2..0]];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            state_next = 10'd58;
+        end
+
+        10'd58: begin // OUT <= MDR;
+            out_next = mdr_out;
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[2:0]}; //z2..0
+            state_next = 10'd59;
+        end
+
+        10'd59: begin //MDR <= MEM[z2..0];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            if(ir_out[3]) begin //regind
+                state_next = 10'd60;
+            end
+            else begin //regdir
+                state_next = 10'd62;
+            end
+        end
+
+        10'd60: begin // MAR <= MEM[z2..0]
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1:0];
+            state_next = 10'd61;
+        end
+
+        10'd61: begin // MDR <= MEM[MEM[z2..0]];
+            mdr_ld = 1'b1; 
+            mdr_in = mem;
+            state_next = 10'd62;
+        end
+
+        10'd62: begin // OUT <= MDR;
+            out_next = mdr_out;
+            state_next = 10'd1;
+        end
+
+
+
+        10'd80: begin //MAR <= x2..0 
+            mar_ld = 1'b1;
+            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[10:8]};
+            if(ir_out[11])
+                state_next = 10'd81;
+            else
+                state_next = 10'd83;
+        end
+
+        10'd81: begin //MDR <= MEM[MAR];
+            mdr_ld = 1'b1;
+            mdr_in = mem;
+            state_next = 10'd82;
+        end
+
+        10'd82: begin //MAR <= MEM[x2..0];
+            mar_ld = 1'b1;
+            mar_in = mdr_out[ADDR_WIDTH - 1: 0];
+            state_next = 10'd83;
+        end
+
+        10'd83: begin // MDR <= ACC;
+            mdr_ld = 1'b1;
+            mdr_in = a_out;
+            we_next = 1'b1;
+            state_next = 10'd1;
+        end
+        
     endcase
 end
+
 endmodule

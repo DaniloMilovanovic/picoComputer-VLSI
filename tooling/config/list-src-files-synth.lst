@@ -7,4 +7,6 @@ src/synthesis/modules/ssd.v
 src/synthesis/modules/clk_div.v
 src/synthesis/modules/memory.v
 src/synthesis/modules/mem_init.mif
+src/synthesis/modules/cpu.v
+src/synthesis/modules/top.v
 src/synthesis/DE0_TOP.v
