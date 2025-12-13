@@ -203,7 +203,12 @@ module DE0_TOP
 	//=======================================================
 	//  REG/WIRE declarations
 	//=======================================================
-
+	/*
+	assign {HEX3_DP, HEX2_DP, HEX1_DP, HEX0_DP} = 4'hF;
+	*/
+	//=======================================================
+	//  Structural coding
+	//=======================================================
 	assign {HEX3_DP, HEX2_DP, HEX1_DP, HEX0_DP} = 4'hF;
 
 	//=======================================================
@@ -217,12 +222,11 @@ module DE0_TOP
 		.DATA_WIDTH(16)
 	) top_inst (
 		.clk(CLOCK_50),
-		.kbd({PS2_KBDAT, PS2_KBCLK}),
 		.btn(~BUTTON[2:0]),
-		.sw(SW[9:0]),
-		.mnt({VGA_HS, VGA_VS, VGA_R, VGA_G, VGA_B}),
+		.rst_n(SW[9]),
+		.sw(SW[8:0]),
 		.led(LEDG[9:0]),
-		.ssd({HEX3_D, HEX2_D, HEX1_D, HEX0_D})
+		.hex({HEX3_D, HEX2_D, HEX1_D, HEX0_D})
 	);
 
 endmodule
