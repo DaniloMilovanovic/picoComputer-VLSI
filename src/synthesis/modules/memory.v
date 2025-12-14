@@ -11,16 +11,17 @@ module memory #(
     input [DATA_WIDTH - 1:0] data,
     output reg [DATA_WIDTH - 1:0] out
 );
-
 	(* ram_init_file = FILE_NAME *) reg [DATA_WIDTH - 1:0] mem [2**ADDR_WIDTH - 1:0];
 
     always @(posedge clk) begin
         if (we) begin
             mem[addr] <= data;
         end
-        else begin
-            out <= mem[addr];
-        end
+    end
+
+    always @(*) begin
+        if (!we)
+            out = mem[addr];
     end
 
 endmodule
