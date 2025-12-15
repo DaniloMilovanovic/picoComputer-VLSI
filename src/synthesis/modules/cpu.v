@@ -32,33 +32,110 @@ alu #(.DATA_WIDTH(DATA_WIDTH)) ALU(.oc(alu_oc), .a(alu_a), .b(alu_b), .f(alu_f))
 reg pc_cl, pc_ld, pc_inc, pc_dec, pc_sr, pc_ir, pc_sl, pc_il;
 reg [ADDR_WIDTH - 1:0] pc_in;
 wire [ADDR_WIDTH - 1:0] pc_out;
-register #(.DATA_WIDTH(ADDR_WIDTH)) PC(clk, rst_n, pc_cl, pc_ld, pc_in, pc_inc, pc_dec, pc_sr, pc_ir, pc_sl, pc_il, pc_out); 
-//NEMOJ PO REDOSLEDU!
+register #(.DATA_WIDTH(ADDR_WIDTH)) PC(
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .cl(pc_cl), 
+    .ld(pc_ld), 
+    .in(pc_in), 
+    .inc(pc_inc), 
+    .dec(pc_dec), 
+    .sr(pc_sr), 
+    .ir(pc_ir), 
+    .sl(pc_sl), 
+    .il(pc_il), 
+    .out(pc_out)
+); 
 
 reg sp_cl, sp_ld, sp_inc, sp_dec, sp_sr, sp_ir, sp_sl, sp_il;
 reg [ADDR_WIDTH - 1:0] sp_in;
 wire [ADDR_WIDTH - 1:0] sp_out;
-register #(.DATA_WIDTH(ADDR_WIDTH)) SP(clk, rst_n, sp_cl, sp_ld, sp_in, sp_inc, sp_dec, sp_sr, sp_ir, sp_sl, sp_il, sp_out);
+register #(.DATA_WIDTH(ADDR_WIDTH)) SP(
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .cl(sp_cl), 
+    .ld(sp_ld), 
+    .in(sp_in), 
+    .inc(sp_inc), 
+    .dec(sp_dec), 
+    .sr(sp_sr), 
+    .ir(sp_ir), 
+    .sl(sp_sl), 
+    .il(sp_il), 
+    .out(sp_out)
+);
 
 reg ir_cl, ir_ld, ir_inc, ir_dec, ir_sr, ir_ir, ir_sl, ir_il;
 reg [2 * DATA_WIDTH - 1:0] ir_in;
 wire [2 * DATA_WIDTH - 1:0] ir_out;
-register #(.DATA_WIDTH(2 * DATA_WIDTH)) IR(clk, rst_n, ir_cl, ir_ld, ir_in, ir_inc, ir_dec, ir_sr, ir_ir, ir_sl, ir_il, ir_out);
+register #(.DATA_WIDTH(2 * DATA_WIDTH)) IR(
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .cl(ir_cl), 
+    .ld(ir_ld), 
+    .in(ir_in), 
+    .inc(ir_inc), 
+    .dec(ir_dec), 
+    .sr(ir_sr), 
+    .ir(ir_ir), 
+    .sl(ir_sl), 
+    .il(ir_il), 
+    .out(ir_out)
+);
 
 reg mar_cl, mar_ld, mar_inc, mar_dec, mar_sr, mar_ir, mar_sl, mar_il;
 reg [ADDR_WIDTH - 1:0] mar_in;
 wire [ADDR_WIDTH - 1:0] mar_out;
-register #(.DATA_WIDTH(ADDR_WIDTH)) MAR(clk, rst_n, mar_cl, mar_ld, mar_in, mar_inc, mar_dec, mar_sr, mar_ir, mar_sl, mar_il, mar_out);
+register #(.DATA_WIDTH(ADDR_WIDTH)) MAR(
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .cl(mar_cl), 
+    .ld(mar_ld), 
+    .in(mar_in), 
+    .inc(mar_inc), 
+    .dec(mar_dec), 
+    .sr(mar_sr), 
+    .ir(mar_ir), 
+    .sl(mar_sl), 
+    .il(mar_il), 
+    .out(mar_out)
+);
 
 reg mdr_cl, mdr_ld, mdr_inc, mdr_dec, mdr_sr, mdr_ir, mdr_sl, mdr_il;
 reg [DATA_WIDTH - 1:0] mdr_in;
 wire [DATA_WIDTH - 1:0] mdr_out;
-register #(.DATA_WIDTH(DATA_WIDTH)) MDR(clk, rst_n, mdr_cl, mdr_ld, mdr_in, mdr_inc, mdr_dec, mdr_sr, mdr_ir, mdr_sl, mdr_il, mdr_out);
+register #(.DATA_WIDTH(DATA_WIDTH)) MDR(
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .cl(mdr_cl), 
+    .ld(mdr_ld), 
+    .in(mdr_in), 
+    .inc(mdr_inc), 
+    .dec(mdr_dec), 
+    .sr(mdr_sr), 
+    .ir(mdr_ir), 
+    .sl(mdr_sl), 
+    .il(mdr_il), 
+    .out(mdr_out)
+);
 
 reg a_cl, a_ld, a_inc, a_dec, a_sr, a_ir, a_sl, a_il;
 reg [ADDR_WIDTH - 1:0] a_in;
 wire [ADDR_WIDTH - 1:0] a_out;
-register #(.DATA_WIDTH(ADDR_WIDTH)) A(clk, rst_n, a_cl, a_ld, a_in, a_inc, a_dec, a_sr, a_ir, a_sl, a_il, a_out);
+register #(.DATA_WIDTH(ADDR_WIDTH)) A(
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .cl(a_cl), 
+    .ld(a_ld), 
+    .in(a_in), 
+    .inc(a_inc), 
+    .dec(a_dec), 
+    .sr(a_sr), 
+    .ir(a_ir), 
+    .sl(a_sl), 
+    .il(a_il), 
+    .out(a_out)
+);
 
 reg [9:0] state_reg, state_next;
 
@@ -99,7 +176,7 @@ always @(*) begin
     pc_ir = 1'b0;
     pc_sl = 1'b0;
     pc_il = 1'b0;
-    pc_in = 6'b0; //FIX THIS!!!
+    pc_in = {(ADDR_WIDTH){1'b0}}; //FIX THIS!!!
 
     sp_cl = 1'b0;
     sp_ld = 1'b0;
@@ -109,7 +186,7 @@ always @(*) begin
     sp_ir = 1'b0;
     sp_sl = 1'b0;
     sp_il = 1'b0;
-    sp_in = 6'b0;
+    sp_in = {(ADDR_WIDTH){1'b0}};
 
     ir_cl = 1'b0;
     ir_ld = 1'b0;
@@ -119,7 +196,7 @@ always @(*) begin
     ir_ir = 1'b0;
     ir_sl = 1'b0;
     ir_il = 1'b0;
-    ir_in = 32'b0;
+    ir_in = {(2 * DATA_WIDTH){1'b0}};
 
     mar_cl = 1'b0;
     mar_ld = 1'b0;
@@ -129,7 +206,7 @@ always @(*) begin
     mar_ir = 1'b0;
     mar_sl = 1'b0;
     mar_il = 1'b0;
-    mar_in = 6'b0;
+    mar_in =  {(ADDR_WIDTH){1'b0}};
 
     mdr_cl = 1'b0;
     mdr_ld = 1'b0;
@@ -139,7 +216,7 @@ always @(*) begin
     mdr_ir = 1'b0;
     mdr_sl = 1'b0;
     mdr_il = 1'b0;
-    mdr_in = 16'b0;
+    mdr_in =  {(DATA_WIDTH){1'b0}};
 
     a_cl = 1'b0;
     a_ld = 1'b0;
@@ -149,7 +226,7 @@ always @(*) begin
     a_ir = 1'b0;
     a_sl = 1'b0;
     a_il = 1'b0;
-    a_in = 6'b0;
+    a_in =  {(ADDR_WIDTH){1'b0}};
 
     alu_oc = 3'b0;
     alu_a = {(DATA_WIDTH - 1){1'b0}};
@@ -160,10 +237,10 @@ always @(*) begin
             we_next = 1'b0;
             out_next = out_reg;
             
-            pc_in = 6'd8;
+            pc_in = 6'd8; // pc start position on pico computer
             pc_ld = 1'b1;
 
-            sp_in = ADDR_WIDTH - 1;
+            sp_in = ADDR_WIDTH - 1; // sp points to the last available address
             sp_ld = 1'b1;
 
             state_next = 10'd1;
@@ -433,7 +510,7 @@ always @(*) begin
         end
 
         
-        //MEM[x2..0] <= ALU
+        // LOAD ALU into first operand
         10'd34: begin //MAR <= x2..0 
             mar_ld = 1'b1;
             mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[10:8]};
