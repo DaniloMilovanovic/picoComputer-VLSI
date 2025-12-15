@@ -6,8 +6,10 @@ module top #(
 ) (
     input clk,
     input rst_n,
+    input [1:0] kbd,
     input [2:0] btn,
     input [8:0] sw,
+    output [13:0] mnt,
     output [9:0] led,
     output [27:0] hex
 );
@@ -19,9 +21,19 @@ wire [DATA_WIDTH - 1:0] mem_data_input;
 wire [ADDR_WIDTH - 1:0] mem_addr;
 wire mem_we;
 wire [ADDR_WIDTH - 1:0] pc_out, sp_out;
-wire[DATA_WIDTH - 6:0] out_top_bits_cpu;
+wire control, status;
+wire [DATA_WIDTH - 1:0] cpu_out;
+wire [3:0] ones_pc, tens_pc, ones_sp, tens_sp;
 
-wire[3:0] ones_pc, tens_pc, ones_sp, tens_sp;
+wire [3:0] ps2_num;
+
+wire kbd_clk, kbd_data;
+
+wire [15:0] ps2_code;
+wire [23:0] vga_code;
+
+assign kbd_clk = kbd[0];
+assign kbd_data = kbd[1];
 
 
 clk_div #(.DIVISOR(DIVISOR)) 
@@ -37,15 +49,20 @@ cpu_inst(
     .clk(clk_slow), 
     .rst_n(rst_n),
     .mem(mem_data_output),
-    .in({{DATA_WIDTH - 4{1'b0}}, sw[3:0]}),
+    .in({{DATA_WIDTH - 4{1'b0}}, ps2_num}),
+    .control(control),
+    .status(status),
     .we(mem_we),
     .addr(mem_addr),
     .data(mem_data_input),
     .pc(pc_out),
     .sp(sp_out),
-    .out({out_top_bits_cpu, led[4:0]})
+    .out(cpu_out)
 );
 
+assign led[4:0] = cpu_out[4:0];
+
+assign led[5] = status;
 
 memory #(.FILE_NAME(FILE_NAME), .DATA_WIDTH(DATA_WIDTH), .ADDR_WIDTH(ADDR_WIDTH))
 memory_inst(
@@ -56,6 +73,39 @@ memory_inst(
     .out(mem_data_output)
 );
 
+
+ps2 ps2_inst(
+    .clk(clk_slow), 
+    .rst_n(rst_n), 
+    .ps2_clk(kbd_clk), 
+    .ps2_data(kbd_data), 
+    .code(ps2_code)
+);
+
+scan_codes scan_codes_inst(
+    .clk(clk_slow), 
+    .rst_n(rst_n), 
+    .code(ps2_code), 
+    .control(control), 
+    .status(status), 
+    .num(ps2_num)
+);
+
+color_codes color_codes_inst(
+    .num(cpu_out[5:0]), 
+    .code(vga_code)
+);
+
+vga vga_inst(
+    .clk(clk_slow), 
+    .rst_n(rst_n), 
+    .code(vga_code), 
+    .hsync(mnt[13]), 
+    .vsync(mnt[12]), 
+    .red(mnt[11:8]), 
+    .green(mnt[7:4]), 
+    .blue(mnt[3:0])
+);
 
 bcd bcd_inst0(
     .in(pc_out), 

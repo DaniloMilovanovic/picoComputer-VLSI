@@ -6,6 +6,8 @@ module cpu #(
     input rst_n,
     input [DATA_WIDTH - 1:0] mem,
     input [DATA_WIDTH - 1:0] in,
+    input control,
+    output status,
     output we,
     output [ADDR_WIDTH - 1:0] addr,
     output [DATA_WIDTH - 1:0] data,
@@ -139,9 +141,11 @@ register #(.DATA_WIDTH(ADDR_WIDTH)) A(
 
 reg [9:0] state_reg, state_next;
 
+reg status_reg, status_next;
 reg we_reg, we_next;
 reg [DATA_WIDTH - 1:0] out_reg, out_next;
 
+assign status = status_reg;
 assign we = we_reg;
 assign addr = mar_out;
 assign data = mdr_out;
@@ -154,11 +158,13 @@ always @(posedge clk, negedge rst_n) begin
         out_reg <= 1'b0;
         state_reg <= {10{1'b0}};
         we_reg <= 1'b0;
+        status_reg <= 1'b0;
         out_reg <= {(DATA_WIDTH - 1){1'b0}};
     end
     else begin
         state_reg <= state_next;
         we_reg <= we_next;
+        status_reg <= status_next;
         out_reg <= out_next;
     end
 end
@@ -167,7 +173,8 @@ always @(*) begin
     state_next = state_reg;
     we_next = 1'b0;
     out_next = out_reg;
-
+    status_next = status_reg;
+    
     pc_cl = 1'b0;
     pc_ld = 1'b0;
     pc_inc = 1'b0;
@@ -281,7 +288,7 @@ always @(*) begin
                         state_next = 10'd5;
                 end
                 DIV: state_next = 10'd5;
-                IN: state_next = 10'd15;
+                IN: state_next = 10'd38;
                 OUT: state_next = 10'd16;
                 STOP: state_next = 10'd21;
                 default: 
@@ -364,14 +371,6 @@ always @(*) begin
             a_in = alu_f;
             a_ld = 1'b1;
 
-            state_next = 10'd34;
-        end
-
-        //IN operation
-        //Load in into accumulator
-        10'd15: begin
-            a_ld = 1'b1;
-            a_in = in;
             state_next = 10'd34;
         end
 
@@ -538,10 +537,34 @@ always @(*) begin
             we_next = 1'b1;
             state_next = 10'd1;
         end
+
         
+        //IN operation
+        //Load in into accumulator
+        10'd38: begin
+            status_next = 1'b1;
+            state_next = 10'd39;
+        end
+
+        //Loop until the peripheral device sends data
+        10'd39: begin
+            if(control) begin
+                a_ld = 1'b1;
+                a_in = in;
+                status_next = 1'b0;
+                state_next = 10'd34;
+            end
+            else begin
+                state_next = 10'd39;
+            end
+        end
+
+        //Error state
         10'd63: begin
             state_next = 10'd63;
         end
+
+        //If a state hasn't been defined, go to error state
         default:
             state_next = 10'd63;
     endcase

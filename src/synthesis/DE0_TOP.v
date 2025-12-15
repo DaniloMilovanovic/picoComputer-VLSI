@@ -217,9 +217,11 @@ module DE0_TOP
 		.DATA_WIDTH(16)
 	) top_inst (
 		.clk(CLOCK_50),
-		.btn(~BUTTON[2:0]),
 		.rst_n(SW[9]),
+		.kbd({PS2_KBDAT, PS2_KBCLK}),
+		.btn(~BUTTON[2:0]),
 		.sw(SW[8:0]),
+		.mnt({VGA_HS, VGA_VS, VGA_R, VGA_G, VGA_B}),
 		.led(LEDG[9:0]),
 		.hex({HEX3_D, HEX2_D, HEX1_D, HEX0_D})
 	);
