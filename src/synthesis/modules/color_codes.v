@@ -4,8 +4,8 @@ module color_codes (
 );
     wire [3:0] ones, tens;
     
-    assign ones = num % 10;
-    assign tens = (num / 10) % 10;
+    assign ones = num % 4'd10;
+    assign tens = (num / 4'd10) % 4'd10;
 
 
     localparam 

@@ -8,6 +8,37 @@ module vga (
     output [3:0] green,
     output [3:0] blue
 );
+    
+    // 800x600 @ 60Hz
+    /*parameter H_DISPLAY = 800;
+    parameter H_FP      = 40;
+    parameter H_SYNC    = 128;
+    parameter H_BP      = 88;
+    parameter H_TOTAL   = 1056;
+    
+    parameter V_DISPLAY = 600;
+    parameter V_FP      = 1;
+    parameter V_SYNC    = 4;
+    parameter V_BP      = 23;
+    parameter V_TOTAL   = 628;
+
+    parameter POLARITY = 1;*/
+    // 800x600 @ 72Hz
+    
+    parameter H_DISPLAY = 800;
+    parameter H_FP      = 56;
+    parameter H_SYNC    = 120;
+    parameter H_BP      = 64;
+    parameter H_TOTAL   = 1040;
+    
+    parameter V_DISPLAY = 600;
+    parameter V_FP      = 37;
+    parameter V_SYNC    = 6;
+    parameter V_BP      = 23;
+    parameter V_TOTAL   = 666;
+
+    parameter POLARITY = 1;
+
     wire [11:0] left_color, right_color;
     reg [11:0] display_color;
 
@@ -30,15 +61,15 @@ module vga (
         end
     end
 
-    always @(*) begin//maybe add vertical blanking
-        hsync = 1'b0;
-        vsync = 1'b0;
+    always @(*) begin
+        hsync = ~POLARITY;
+        vsync = ~POLARITY;
         h_pos_next = h_pos;
         v_pos_next = v_pos;
-
+        
         //Counter
-        if(h_pos == 1039) begin
-            if(v_pos == 665)
+        if(h_pos == H_TOTAL - 1) begin
+            if(v_pos == V_TOTAL - 1)
                 v_pos_next = 0;
             else 
                 v_pos_next = v_pos + 1;
@@ -50,19 +81,20 @@ module vga (
         end
         
         //Display left color on the left part of monitor, right color at the right part.
-        if(h_pos < 400 && v_pos < 600) 
-            display_color = left_color;
-        else if(h_pos > 399 && h_pos < 800 && v_pos < 600)
-            display_color = right_color;
-        else
+        if(h_pos < H_DISPLAY & v_pos < V_DISPLAY) begin
+            if(h_pos < H_DISPLAY / 2)
+                display_color = left_color;
+            else 
+                display_color = right_color;
+        end
+        else 
             display_color = 12'h000;
         
         //Horizontal and vertical sync
-        if(h_pos > 855 && h_pos < 976)
-            hsync = 1;
+        if(h_pos > H_DISPLAY + H_FP - 1 && h_pos < H_DISPLAY + H_FP + H_SYNC)
+            hsync = POLARITY;
         
-        if(v_pos > 636 && v_pos < 643)
-            vsync = 1;
-
+        if(v_pos > V_DISPLAY + V_FP - 1 && v_pos < V_DISPLAY + V_FP + V_SYNC)
+            vsync = POLARITY;
     end
 endmodule
