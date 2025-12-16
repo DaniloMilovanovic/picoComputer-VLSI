@@ -10,6 +10,7 @@ src/synthesis/modules/mem_init.mif
 src/synthesis/modules/scan_codes.v
 src/synthesis/modules/color_codes.v
 src/synthesis/modules/ps2.v
+src/synthesis/modules/vga.v
 src/synthesis/modules/cpu.v
 src/synthesis/modules/top.v
 src/synthesis/DE0_TOP.v

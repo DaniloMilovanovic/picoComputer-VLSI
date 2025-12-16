@@ -30,7 +30,7 @@ module vga (
         end
     end
 
-    always @(*) begin
+    always @(*) begin//maybe add vertical blanking
         hsync = 1'b0;
         vsync = 1'b0;
         h_pos_next = h_pos;
