@@ -20,8 +20,7 @@ module memory #(
     end
 
     always @(*) begin
-        if (!we)
-            out = mem[addr];
+        out = mem[addr];
     end
 
 endmodule
