@@ -5,70 +5,90 @@ module ps2 (
     input ps2_data,
     output [15:0] code
 );
-    reg[15:0] code_reg, code_next;
-    reg [7:0] buffer, buffer_next;
-    reg loading_state, loading_state_next;
-    reg [3:0] loaded_bit_counter, loaded_bit_counter_next;
-    reg parity_check, parity_check_next;
-    reg parity_bit, parity_bit_next;
 
-    assign out = code_reg;
+    reg state_reg, state_next;
+    localparam idle = 1'b0, busy = 1'b1;
+    
+    reg [7:0] ps2_clk_debounce_buffer_reg;
+    reg ps2_clk_debounce_reg;
+    reg ps2_clk_debounce_prev;
+    
+    reg [3:0] remaining_bit_counter, remaining_bit_counter_next;
+    reg [10:0] buffer, buffer_next; 
+    reg parity;
 
-    always @(negedge ps2_clk, negedge rst_n) begin
+    reg [15:0] code_reg, code_reg_next;
+
+    assign code = code_reg;
+    assign leds = {state_reg, ps2_clk_debounce_reg, ps2_data, code_reg[7:0]};
+
+    always @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            loading_state <= 1'b0;
-            loaded_bit_counter <= 4'h0;
-            buffer <= 8'h00;
-            parity_bit <= 1'b0;
-            parity_check <= 1'b1;
-            code_reg = 16'h0000;
+            
+            ps2_clk_debounce_buffer_reg <= 8'hff;
+            ps2_clk_debounce_reg <= 1'b1;
+            ps2_clk_debounce_prev <= 1'b1;
+            state_reg <= idle;
+            remaining_bit_counter <= 4'h0;
+            buffer <= 11'h000;
+            code_reg <= 16'h0000;
         end
         else begin
-            loading_state <= loading_state_next;
-            loaded_bit_counter <= loaded_bit_counter_next;
-            parity_bit <= parity_bit_next;
-            parity_check <= parity_check_next;
+
+            ps2_clk_debounce_buffer_reg <= {ps2_clk_debounce_buffer_reg[6:0], ps2_clk};
+            
+            if (ps2_clk_debounce_buffer_reg == 8'hff)  // All bits are 1
+                ps2_clk_debounce_reg <= 1'b1;
+            else if (ps2_clk_debounce_buffer_reg == 8'h00)  // All bits are 0
+                ps2_clk_debounce_reg <= 1'b0;
+            
+            ps2_clk_debounce_prev <= ps2_clk_debounce_reg;
+            
+            state_reg <= state_next;
+            remaining_bit_counter <= remaining_bit_counter_next;
             buffer <= buffer_next;
-            code_reg <= code_next;
+            code_reg <= code_reg_next;
         end
     end
 
+    wire ps2_clk_falling_edge = (ps2_clk_debounce_prev == 1'b1 && ps2_clk_debounce_reg == 1'b0);
+
     always @(*) begin
-        code_next = code_reg;
-        loaded_bit_counter_next = 4'h0;
-        parity_bit_next = parity_bit;
-        parity_check_next = parity_check;
-        loading_state_next = loading_state;
+        state_next = state_reg;
+        remaining_bit_counter_next = remaining_bit_counter;
         buffer_next = buffer;
+        code_reg_next = code_reg;
+        
+        case (state_reg)
+            idle: begin
 
-        //FSM with two states
-        if(loading_state) begin
-            if(loaded_bit_counter < 4'd8) begin //Load each bit into the buffer and calculate the parity bit
+                if (ps2_clk_falling_edge && ps2_data == 1'b0) begin
 
-                buffer_next[loaded_bit_counter] = ps2_data;
-                parity_check_next = parity_check ^ ps2_data;
-                loaded_bit_counter_next = loaded_bit_counter + 1;
-
+                    state_next = busy;
+                    remaining_bit_counter_next = 4'd10;
+                    buffer_next = 11'h000;
+                end
             end
-            else if (loaded_bit_counter == 4'd8) begin
+            
+            busy: begin
 
-                parity_bit_next = ps2_data;
-                loaded_bit_counter_next = loaded_bit_counter + 1;
+                if (ps2_clk_falling_edge) begin
 
+                    buffer_next = {ps2_data, buffer[10:1]};
+                    remaining_bit_counter_next = remaining_bit_counter - 1;
+                    
+                    if (remaining_bit_counter == 4'd1) begin
+                        state_next = idle;
+                        
+                        if (buffer[0] == 1'b0 && ps2_data == 1'b1)//Add a check for the parity bit
+                            code_reg_next = {code_reg[7:0], buffer[9:2]};
+                    end
+                end
             end
-            else begin
-                if(parity_bit == parity_check && ps2_data == 1'b1)
-                    code_next = {code_reg[7:0], buffer};
-
-                loading_state_next = 1'b0;
-
+            
+            default: begin
+                state_next = idle;
             end
-        end
-        else begin
-            if(ps2_data == 0) begin
-                loading_state_next = 1'b1;
-                parity_bit_next = 1'b1; // Because PS2 uses odd parity (odd number of 1's is equal to 0)
-            end
-        end
+        endcase
     end
 endmodule

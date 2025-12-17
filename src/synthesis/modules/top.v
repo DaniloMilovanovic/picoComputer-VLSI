@@ -75,7 +75,7 @@ memory_inst(
 
 
 ps2 ps2_inst(
-    .clk(clk_slow), 
+    .clk(clk), 
     .rst_n(rst_n), 
     .ps2_clk(kbd_clk), 
     .ps2_data(kbd_data), 
@@ -86,8 +86,8 @@ scan_codes scan_codes_inst(
     .clk(clk_slow), 
     .rst_n(rst_n), 
     .code(ps2_code), 
-    .control(control), 
     .status(status), 
+    .control(control),    
     .num(ps2_num)
 );
 
@@ -97,7 +97,7 @@ color_codes color_codes_inst(
 );
 
 vga vga_inst(
-    .clk(clk_slow), 
+    .clk(clk), 
     .rst_n(rst_n), 
     .code(vga_code), 
     .hsync(mnt[13]), 

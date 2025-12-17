@@ -151,7 +151,7 @@ assign addr = mar_out;
 assign data = mdr_out;
 assign out = out_reg;
 assign pc = pc_out;
-assign sp = state_reg;
+assign sp = sp_out;
 
 always @(posedge clk, negedge rst_n) begin
     if(!rst_n) begin
@@ -247,7 +247,7 @@ always @(*) begin
             pc_in = 6'd8; // pc start position on pico computer
             pc_ld = 1'b1;
 
-            sp_in = ADDR_WIDTH - 1; // sp points to the last available address
+            sp_in = 2**ADDR_WIDTH - 1; // sp points to the last available address
             sp_ld = 1'b1;
 
             state_next = 10'd1;
