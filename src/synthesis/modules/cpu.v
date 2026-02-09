@@ -125,9 +125,9 @@ register #(.DATA_WIDTH(DATA_WIDTH)) MDR(
 );
 
 reg a_cl, a_ld, a_inc, a_dec, a_sr, a_ir, a_sl, a_il;
-reg [ADDR_WIDTH - 1:0] a_in;
-wire [ADDR_WIDTH - 1:0] a_out;
-register #(.DATA_WIDTH(ADDR_WIDTH)) A(
+reg [DATA_WIDTH - 1:0] a_in;
+wire [DATA_WIDTH - 1:0] a_out;
+register #(.DATA_WIDTH(DATA_WIDTH)) A(
     .clk(clk), 
     .rst_n(rst_n), 
     .cl(a_cl), 
