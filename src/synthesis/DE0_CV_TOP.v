@@ -75,25 +75,24 @@ module DE0_CV_TOP(input CLOCK2_50,
     //  REG/WIRE declarations
     // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == 
     
-    //assign {HEX3, HEX2} = 14'h3FFF;
+    assign {HEX3, HEX2} = 14'h3FFF;
 
     // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == 
     //  Structural coding
     // ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  ==  == 
-    /*
-    top #(
+    
+    top #(//Don't forget to add the filename to list-src-files-synth.lst
       .DIVISOR(50_000_000),
       .FILE_NAME("mem_init.mif"),
       .ADDR_WIDTH(6),
       .DATA_WIDTH(16)
     ) top_inst (
       .clk(CLOCK_50),
-      .kbd({PS2_DAT, PS2_CLK}),
       .btn(~KEY[2:0]),
-      .sw(SW[9:0]),
-      .mnt({VGA_HS, VGA_VS, VGA_R, VGA_G, VGA_B}),
+      .rst_n(SW[9]),
+      .sw(SW[8:0]),
       .led(LEDR[9:0]),
       .hex({HEX5, HEX4, HEX1, HEX0})
-    );*/
+    );
 
 endmodule
