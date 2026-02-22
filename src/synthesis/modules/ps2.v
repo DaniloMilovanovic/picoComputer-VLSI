@@ -1,5 +1,6 @@
 module ps2 (
     input clk,
+    input clk_slow,
     input rst_n,
     input ps2_clk,
     input ps2_data,
@@ -7,7 +8,7 @@ module ps2 (
 );
 
     reg state_reg, state_next;
-    localparam idle = 1'b0, busy = 1'b1;
+    localparam idle = 1'b0, busy = 1'b1, waiting = 2'b10;
     
     reg [7:0] ps2_clk_debounce_buffer_reg;
     reg ps2_clk_debounce_reg;
@@ -17,9 +18,9 @@ module ps2 (
     reg [10:0] buffer, buffer_next; 
     reg parity;
 
-    reg [15:0] code_reg, code_reg_next;
+    reg [15:0] code_reg, code_reg_next, code_reg_slow, code_reg_slow_prev;
 
-    assign code = code_reg;
+    assign code = code_reg_slow;
     assign leds = {state_reg, ps2_clk_debounce_reg, ps2_data, code_reg[7:0]};
 
     always @(posedge clk, negedge rst_n) begin
@@ -48,6 +49,24 @@ module ps2 (
             remaining_bit_counter <= remaining_bit_counter_next;
             buffer <= buffer_next;
             code_reg <= code_reg_next;
+        end
+    end
+
+    
+    always @(posedge clk_slow, negedge rst_n) begin
+        if(!rst_n) begin
+
+            code_reg_slow <= 16'h0000;
+        end
+        else begin
+            code_reg_slow_prev <= code_reg;
+            if(code_reg_slow_prev != code_reg)begin
+                code_reg_slow <= code_reg;
+            end
+            else begin
+                code_reg_slow <= 16'h0;
+            end
+            
         end
     end
 

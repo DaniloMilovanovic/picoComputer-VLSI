@@ -24,10 +24,7 @@ localparam
     DIV = 4'b0100, 
     IN = 4'b0111,
     OUT = 4'b1000,
-    STOP = 4'b1111;/*OVDE
-    JSR = 4'b0101,
-    RTS = 4'b1110,
-    BEQ = 4'b1010*/
+    STOP = 4'b1111;
 
 reg [2:0] alu_oc;
 reg [DATA_WIDTH - 1:0] alu_a, alu_b; 
@@ -293,10 +290,7 @@ always @(*) begin
                 DIV: state_next = 10'd5;
                 IN: state_next = 10'd38;
                 OUT: state_next = 10'd16;
-                STOP: state_next = 10'd21;/*OVDE
-                JSR: state_next = 10'd38;
-                RTS: state_next = 10'd40;
-                BEQ: state_next = 10'd44;*/
+                STOP: state_next = 10'd21;
                 default: 
                     state_next = 10'd63;//error state
             endcase
@@ -564,141 +558,6 @@ always @(*) begin
                 state_next = 10'd39;
             end
         end
-
-        
-        /*OVDE
-        10'd40: begin //JSR
-            mar_in = sp_out;
-            sp_dec = 1'b1;
-            mar_ld = 1'b1;
-            mdr_in = pc_out;
-            mdr_ld = 1'b1;
-            we_next = 1'b1;
-            state_next = 10'd41;
-        end
-
-        10'd41: begin //JSR
-            pc_in = {{ADDR_WIDTH - 6{1'b0}}, ir_out[5:0]};
-            pc_ld = 1'b1;
-            state_next = 10'd1;
-        end
-
-        10'd42: begin //RTS
-            sp_inc = 1'b1;
-            state_next = 10'd43;
-        end
-
-        10'd43: begin //RTS
-            mar_ld = 1'b1;
-            mar_in = sp_out;
-            state_next = 10'd44;
-        end
-        
-        10'd44: begin//RTS
-            mdr_ld = 1'b1;
-            mdr_in = mem;
-            state_next = 10'd45;
-        end
-
-        10'd45: begin//RTS
-            pc_in = mdr_out;
-            pc_ld = 1'b1;
-            state_next = 10'd1;
-        end
-
-        10'd46: begin //BEQ
-            mar_ld = 1'b1;
-            mar_in = pc_out;
-            pc_inc = 1'b1;
-            state_next = 10'd47;
-        end
-        
-        10'd47: begin
-            mdr_ld = 1'b1;
-            mdr_in = mem;
-            
-            state_next = 10'd48;
-        end
-
-        10'd48: begin // IR[31:16] <= MDR;
-            ir_in = {mdr_out, ir_out[15:0]};
-            ir_ld = 1'b1;
-            state_next = 10'd49;
-        end
-
-        10'd49: begin //MAR <= x2..0
-            mar_ld = 1'b1;
-            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[10:8]};
-            state_next = 10'd50;
-        end
-
-        10'd50: begin // MDR <= MEM[MAR];
-            mdr_ld = 1'b1; 
-            mdr_in = mem;
-
-            if(ir_out[11]) begin //regind
-                state_next = 10'd51;
-            end
-            else begin //regdir
-                state_next = 10'd53;
-            end
-        end
-
-        10'd51: begin // MAR <= MEM[x2..0];
-            mar_ld = 1'b1;
-            mar_in = mdr_out[ADDR_WIDTH - 1: 0];
-            state_next = 10'd52;
-        end
-
-        10'd52: begin // MDR <= MEM[MEM[x2..0]];
-            mdr_ld = 1'b1; 
-            mdr_in = mem;
-            state_next = 10'd53;
-        end
-
-        10'd53: begin // A <= MDR;
-            a_ld = 1'b1;
-            a_in = mdr_out;
-            state_next = 10'd54;
-        end
-
-        10'd54: begin //MAR <= y2..0;
-            mar_ld = 1'b1;
-            mar_in = {{ADDR_WIDTH - 3{1'b0}}, ir_out[6:4]}; //y2..0
-            state_next = 10'd55;
-        end
-
-        10'd55: begin //MDR <= MEM[y2..0];
-            mdr_ld = 1'b1; 
-            mdr_in = mem;
-            if(ir_out[7]) begin //regind
-                state_next = 10'd56;
-            end
-            else begin //regdir
-                state_next = 10'd58;
-            end
-        end
-
-        10'd56: begin // MAR <= MEM[y2..0]
-            mar_ld = 1'b1;
-            mar_in = mdr_out[ADDR_WIDTH - 1: 0];
-            state_next = 10'd57;
-        end
-
-        10'd57: begin // MDR <= MEM[MEM[y2..0]];
-            mdr_ld = 1'b1; 
-            mdr_in = mem;
-            state_next = 10'd58;
-        end
-
-        10'd58: begin 
-            if(a_out == mdr_out) begin
-                pc_in = ir_out[31:16];
-                pc_ld = 1'b1;
-            end
-            state_next = 10'd1;
-        end
-        */
 
         //Error state
         10'd63: begin

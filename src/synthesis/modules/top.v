@@ -76,6 +76,7 @@ memory_inst(
 
 ps2 ps2_inst(
     .clk(clk), 
+    .clk_slow(clk_slow),
     .rst_n(rst_n), 
     .ps2_clk(kbd_clk), 
     .ps2_data(kbd_data), 
